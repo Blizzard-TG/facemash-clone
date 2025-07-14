@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>PictureMash</title>
   <style>
+    * { box-sizing: border-box; }
+
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
@@ -13,20 +15,54 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 20px;
+    }
+
+    nav {
+      width: 100%;
+      background: #1f2e40;
+      display: flex;
+      justify-content: center;
+      padding: 10px 0;
+      box-shadow: 0 2px 5px #00000044;
+    }
+
+    nav button {
+      background: none;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    nav button:hover {
+      background: #2d3e50;
     }
 
     h1 {
-      margin-bottom: 10px;
+      margin-top: 20px;
       font-size: 2.5rem;
-      animation: fadeIn 1s ease-in-out;
+    }
+
+    section {
+      display: none;
+      width: 100%;
+      max-width: 800px;
+      padding: 20px;
+      animation: fadeIn 0.5s ease;
+    }
+
+    .active {
+      display: block;
     }
 
     .image-container {
       display: flex;
       gap: 30px;
       margin: 30px 0;
-      animation: fadeIn 1s ease-in-out;
+      justify-content: center;
+      flex-wrap: wrap;
     }
 
     .image-box {
@@ -37,7 +73,6 @@
       padding: 15px;
       border-radius: 12px;
       box-shadow: 0 0 10px #00000033;
-      transition: transform 0.3s ease;
     }
 
     .image-box img {
@@ -62,32 +97,18 @@
       background: #ffffff44;
     }
 
-    #controls {
-      margin: 20px;
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
     input, button {
       padding: 10px;
+      margin: 5px;
       border-radius: 8px;
       border: none;
     }
 
-    button {
-      cursor: pointer;
-    }
-
     #leaderboard {
-      margin-top: 30px;
-      max-width: 500px;
-      text-align: left;
       background: #ffffff11;
-      padding: 15px;
+      padding: 20px;
       border-radius: 12px;
       box-shadow: 0 0 10px #00000033;
-      animation: fadeIn 1s ease-in-out;
     }
 
     @keyframes fadeIn {
@@ -97,34 +118,56 @@
   </style>
 </head>
 <body>
+  <nav>
+    <button onclick="showSection('loginSection')">Login / Upload</button>
+    <button onclick="showSection('voteSection')">Vote</button>
+    <button onclick="showSection('leaderboardSection'); getLeaderboard();">Leaderboard</button>
+  </nav>
+
   <h1>PictureMash</h1>
 
-  <div id="controls">
+  <!-- Login and Upload -->
+  <section id="loginSection" class="active">
+    <h2>Admin Login</h2>
     <input type="email" id="email" placeholder="Admin Email" />
     <input type="password" id="password" placeholder="Password" />
     <button onclick="login()">Login</button>
+    <br/>
     <input type="file" id="fileUpload" />
-    <button onclick="upload()">Upload</button>
-    <button onclick="getLeaderboard()">Leaderboard</button>
-  </div>
+    <button onclick="upload()">Upload Image</button>
+  </section>
 
-  <div class="image-container" id="voteContainer" style="display: none;">
-    <div class="image-box" id="imgBoxA">
-      <img id="imgA" />
-      <button onclick="vote('A')">Vote</button>
+  <!-- Voting Section -->
+  <section id="voteSection">
+    <h2>Vote for a Picture</h2>
+    <div class="image-container" id="voteContainer">
+      <div class="image-box">
+        <img id="imgA" />
+        <button onclick="vote('A')">Vote</button>
+      </div>
+      <div class="image-box">
+        <img id="imgB" />
+        <button onclick="vote('B')">Vote</button>
+      </div>
     </div>
-    <div class="image-box" id="imgBoxB">
-      <img id="imgB" />
-      <button onclick="vote('B')">Vote</button>
-    </div>
-  </div>
+  </section>
 
-  <div id="leaderboard" style="display: none;"></div>
+  <!-- Leaderboard Section -->
+  <section id="leaderboardSection">
+    <h2>Leaderboard</h2>
+    <div id="leaderboard"></div>
+  </section>
 
   <script>
     const backend = 'http://localhost:3000';
     let token = '';
     let images = [];
+
+    function showSection(id) {
+      document.querySelectorAll('section').forEach(sec => sec.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      if (id === 'voteSection') loadImages();
+    }
 
     async function login() {
       const email = document.getElementById('email').value;
@@ -166,16 +209,12 @@
     async function loadImages() {
       const res = await fetch(`${backend}/images`);
       images = await res.json();
-      if (images.length < 2) {
-        document.getElementById('voteContainer').style.display = 'none';
-        return;
-      }
+      if (images.length < 2) return;
       const [a, b] = getTwoRandom(images);
       document.getElementById('imgA').src = a.src;
       document.getElementById('imgA').dataset.id = a.id;
       document.getElementById('imgB').src = b.src;
       document.getElementById('imgB').dataset.id = b.id;
-      document.getElementById('voteContainer').style.display = 'flex';
     }
 
     function getTwoRandom(arr) {
@@ -198,13 +237,13 @@
       const res = await fetch(`${backend}/leaderboard`);
       const data = await res.json();
       const board = document.getElementById('leaderboard');
-      board.innerHTML = '<h3>Leaderboard</h3>';
+      board.innerHTML = '';
       data.forEach((img, i) => {
         board.innerHTML += `<p>#${i + 1} - Votes: ${img.votes}, Score: ${img.score}</p>`;
       });
-      board.style.display = 'block';
     }
 
+    // Load vote area first time if user opens site
     loadImages();
   </script>
 </body>
