@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PictureMash - Vote</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #2c3e50, #4ca1af);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    nav {
+      width: 100%;
+      background: #1f2e40;
+      display: flex;
+      justify-content: center;
+      padding: 10px 0;
+      box-shadow: 0 2px 5px #00000044;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      padding: 10px 20px;
+      transition: background 0.3s;
+    }
+
+    nav a:hover {
+      background: #2d3e50;
+    }
+
+    h1 {
+      margin-top: 20px;
+      font-size: 2.5rem;
+    }
+
+    .image-container {
+      display: flex;
+      gap: 30px;
+      margin: 30px 0;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .image-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #ffffff11;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px #00000033;
+    }
+
+    .image-box img {
+      width: 250px;
+      height: 250px;
+      object-fit: cover;
+      border-radius: 10px;
+    }
+
+    .image-box button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      background: #ffffff22;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .image-box button:hover {
+      background: #ffffff44;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="login.html">Login / Upload</a>
+    <a href="vote.html">Vote</a>
+    <a href="leaderboard.html">Leaderboard</a>
+  </nav>
+
+  <h1>PictureMash Votin
