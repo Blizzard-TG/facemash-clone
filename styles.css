@@ -1,0 +1,113 @@
+/* styles.css */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(to right, #2c3e50, #4ca1af);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+nav {
+  width: 100%;
+  background: #1f2e40;
+  display: flex;
+  justify-content: center;
+  padding: 10px 0;
+  box-shadow: 0 2px 5px #00000044;
+}
+
+nav button {
+  background: none;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+nav button:hover {
+  background: #2d3e50;
+}
+
+h1 {
+  margin-top: 20px;
+  font-size: 2.5rem;
+}
+
+section {
+  display: none;
+  width: 100%;
+  max-width: 800px;
+  padding: 20px;
+  animation: fadeIn 0.5s ease;
+}
+
+.active {
+  display: block;
+}
+
+.image-container {
+  display: flex;
+  gap: 30px;
+  margin: 30px 0;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.image-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #ffffff11;
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0 0 10px #00000033;
+}
+
+.image-box img {
+  width: 250px;
+  height: 250px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.image-box button {
+  margin-top: 10px;
+  padding: 10px 20px;
+  background: #ffffff22;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.image-box button:hover {
+  background: #ffffff44;
+}
+
+input, button {
+  padding: 10px;
+  margin: 5px;
+  border-radius: 8px;
+  border: none;
+}
+
+#leaderboard {
+  background: #ffffff11;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 0 10px #00000033;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
