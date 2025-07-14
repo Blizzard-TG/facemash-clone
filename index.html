@@ -1,51 +1,155 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>PictureMash</title>
-  <link rel="stylesheet" href="styles.css" />
+  <title>PictureMash - Admin</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #2c3e50, #4ca1af);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    nav {
+      width: 100%;
+      background: #1f2e40;
+      display: flex;
+      justify-content: center;
+      padding: 10px 0;
+      box-shadow: 0 2px 5px #00000044;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      padding: 10px 20px;
+      transition: background 0.3s;
+    }
+
+    nav a:hover {
+      background: #2d3e50;
+    }
+
+    h1 {
+      margin: 30px 0 10px;
+      font-size: 2.5rem;
+    }
+
+    .container {
+      background: #ffffff11;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px #00000033;
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+    }
+
+    input, button {
+      padding: 12px;
+      margin: 10px 0;
+      width: 100%;
+      border-radius: 8px;
+      border: none;
+      font-size: 1rem;
+    }
+
+    input {
+      background: #ffffffcc;
+      color: #000;
+    }
+
+    button {
+      background: #1abc9c;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #16a085;
+    }
+
+    #uploadSection {
+      margin-top: 20px;
+      display: none;
+    }
+  </style>
 </head>
 <body>
   <nav>
-    <button onclick="showSection('loginSection')">Login / Upload</button>
-    <button onclick="showSection('voteSection')">Vote</button>
-    <button onclick="showSection('leaderboardSection'); getLeaderboard();">Leaderboard</button>
+    <a href="index.html">Login / Upload</a>
+    <a href="vote.html">Vote</a>
+    <a href="leaderboard.html">Leaderboard</a>
   </nav>
 
-  <h1>PictureMash</h1>
+  <h1>Admin Panel</h1>
 
-  <!-- Sections -->
-  <section id="loginSection" class="active">
-    <h2>Admin Login</h2>
+  <div class="container">
+    <h2>Login</h2>
     <input type="email" id="email" placeholder="Admin Email" />
     <input type="password" id="password" placeholder="Password" />
     <button onclick="login()">Login</button>
-    <br/>
-    <input type="file" id="fileUpload" />
-    <button onclick="upload()">Upload Image</button>
-  </section>
 
-  <section id="voteSection">
-    <h2>Vote for a Picture</h2>
-    <div class="image-container" id="voteContainer">
-      <div class="image-box">
-        <img id="imgA" />
-        <button onclick="vote('A')">Vote</button>
-      </div>
-      <div class="image-box">
-        <img id="imgB" />
-        <button onclick="vote('B')">Vote</button>
-      </div>
+    <div id="uploadSection">
+      <h3>Upload New Image</h3>
+      <input type="file" id="fileUpload" />
+      <button onclick="upload()">Upload</button>
     </div>
-  </section>
+  </div>
 
-  <section id="leaderboardSection">
-    <h2>Leaderboard</h2>
-    <div id="leaderboard"></div>
-  </section>
+  <script>
+    const backend = 'http://localhost:3000';
+    let token = '';
 
-  <script src="script.js"></script>
+    async function login() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      const res = await fetch(`${backend}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        token = data.token;
+        alert("Login successful!");
+        document.getElementById('uploadSection').style.display = 'block';
+      } else {
+        alert("Login failed");
+      }
+    }
+
+    async function upload() {
+      const file = document.getElementById('fileUpload').files[0];
+      if (!file) return alert("No file selected");
+
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64 = reader.result;
+        const res = await fetch(`${backend}/upload`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': token
+          },
+          body: JSON.stringify({ base64 })
+        });
+        if (res.ok) alert("Image uploaded!");
+        else alert("Upload failed");
+      };
+      reader.readAsDataURL(file);
+    }
+  </script>
 </body>
 </html>
