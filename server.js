@@ -11,7 +11,7 @@ app.use(cors());
 app.use(bodyParser.json({ limit: '10mb' }));
 
 const SECRET = 'secure_secret';
-const ADMIN = { email: 'admin@example.com', password: 'admin123' };
+const ADMIN = { email: 'admin@facemash.com', password: '#B19141914fm*' };
 
 let images = [];
 
