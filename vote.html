@@ -1,94 +1,54 @@
+<!-- frontend/vote.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>PictureMash - Vote</title>
-  <style>
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(to right, #2c3e50, #4ca1af);
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-    }
-
-    nav {
-      width: 100%;
-      background: #1f2e40;
-      display: flex;
-      justify-content: center;
-      padding: 10px 0;
-      box-shadow: 0 2px 5px #00000044;
-    }
-
-    nav a {
-      color: white;
-      text-decoration: none;
-      padding: 10px 20px;
-      transition: background 0.3s;
-    }
-
-    nav a:hover {
-      background: #2d3e50;
-    }
-
-    h1 {
-      margin-top: 20px;
-      font-size: 2.5rem;
-    }
-
-    .image-container {
-      display: flex;
-      gap: 30px;
-      margin: 30px 0;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-
-    .image-box {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      background: #ffffff11;
-      padding: 15px;
-      border-radius: 12px;
-      box-shadow: 0 0 10px #00000033;
-    }
-
-    .image-box img {
-      width: 250px;
-      height: 250px;
-      object-fit: cover;
-      border-radius: 10px;
-    }
-
-    .image-box button {
-      margin-top: 10px;
-      padding: 10px 20px;
-      background: #ffffff22;
-      border: none;
-      border-radius: 8px;
-      color: white;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-
-    .image-box button:hover {
-      background: #ffffff44;
-    }
-  </style>
+  <title>Vote - PictureMash</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <nav>
-    <a href="login.html">Login / Upload</a>
-    <a href="vote.html">Vote</a>
+    <a href="index.html">Login / Upload</a>
+    <a href="vote.html" class="active">Vote</a>
     <a href="leaderboard.html">Leaderboard</a>
   </nav>
 
-  <h1>PictureMash Votin
+  <h1>Vote for a Picture</h1>
+  <div class="image-container" id="voteContainer">
+    <div class="image-box">
+      <img id="imgA" />
+      <button onclick="vote('A')">Vote</button>
+    </div>
+    <div class="image-box">
+      <img id="imgB" />
+      <button onclick="vote('B')">Vote</button>
+    </div>
+  </div>
+
+  <script>
+    const backend = 'http://localhost:3000';
+    let images = [];
+
+    async function loadImages() {
+      const res = await fetch(`${backend}/images`);
+      images = await res.json();
+      if (images.length < 2) return alert("Need at least two images!");
+      const [a, b] = getTwoRandom(images);
+      document.getElementById('imgA').src = a.src;
+      document.getElementById('imgA').dataset.id = a.id;
+      document.getElementById('imgB').src = b.src;
+      document.getElementById('imgB').dataset.id = b.id;
+    }
+
+    function getTwoRandom(arr) {
+      const shuffled = arr.sort(() => 0.5 - Math.random());
+      return [shuffled[0], shuffled[1]];
+    }
+
+    async function vote(choice) {
+      const winnerId = document.getElementById(`img${choice}`).dataset.id;
+      const loserId = document.getElementById(`img${choice === 'A' ? 'B' : 'A'}`).dataset.id;
+      const res = await fetch(`${backend}/vote`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'appl
