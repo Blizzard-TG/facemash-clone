@@ -142,6 +142,16 @@ form button:hover {
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
+/* Admin Section */
+.admin-section {
+  background-color: #fff8dc;
+  border-left: 4px solid #f4b400;
+  padding: 1rem;
+  margin: 1rem 0;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
 /* Footer */
 footer {
   background-color: #f5f5f5;
