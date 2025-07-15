@@ -33,13 +33,14 @@ const backend = (() => {
       saveUsers(users);
     },
 
-    function loginUser({ email, password }) {
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
-      const user = users.find(u => u.email === email && u.password === password);
-      if (!user) throw new Error("Invalid credentials");
-      localStorage.setItem("currentUser", JSON.stringify(user));
-      return user;
-    },
+   function loginUser({ email, password }) {
+  const users = JSON.parse(localStorage.getItem("users") || "[]");
+  const user = users.find(u => u.email === email && u.password === password);
+  if (!user) throw new Error("Invalid credentials");
+  localStorage.setItem("currentUser", JSON.stringify(user));
+  return user;
+}
+
 
     getCurrentUser,
     logout,
