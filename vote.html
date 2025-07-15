@@ -1,0 +1,94 @@
+<!-- vote.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vote - PictureMash</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="signup.html">Sign Up</a>
+    <a href="login.html">Login</a>
+    <a href="vote.html" class="active">Vote</a>
+    <a href="leaderboard.html">Leaderboard</a>
+    <a href="upload.html">Upload</a>
+  </nav>
+
+  <section class="vote-section">
+    <h2>Vote for the Better Picture</h2>
+    <div id="imageContainer" class="image-pair">
+      <div class="vote-image">
+        <img id="imgA" src="" alt="Option A" />
+        <button onclick="castVote('A')">Vote A</button>
+      </div>
+      <div class="vote-image">
+        <img id="imgB" src="" alt="Option B" />
+        <button onclick="castVote('B')">Vote B</button>
+      </div>
+    </div>
+    <p id="voteMessage"></p>
+  </section>
+
+  <script>
+    const voteMessage = document.getElementById('voteMessage');
+    const imgA = document.getElementById('imgA');
+    const imgB = document.getElementById('imgB');
+    let pair = {};
+
+    async function fetchVotingPair() {
+      try {
+        const res = await fetch('http://localhost:3000/vote/pair');
+        const data = await res.json();
+        if (res.ok && data.imageA && data.imageB) {
+          pair = data;
+          imgA.src = data.imageA.url;
+          imgA.dataset.id = data.imageA.id;
+          imgB.src = data.imageB.url;
+          imgB.dataset.id = data.imageB.id;
+        } else {
+          voteMessage.textContent = 'No more images to vote on right now.';
+        }
+      } catch (err) {
+        voteMessage.textContent = 'Error fetching images.';
+        console.error(err);
+      }
+    }
+
+    async function castVote(choice) {
+      const voterId = localStorage.getItem('voterId') || generateVoterId();
+      const votedFor = choice === 'A' ? imgA.dataset.id : imgB.dataset.id;
+      const votedAgainst = choice === 'A' ? imgB.dataset.id : imgA.dataset.id;
+
+      try {
+        const res = await fetch('http://localhost:3000/vote', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ votedFor, votedAgainst, voterId })
+        });
+
+        const result = await res.json();
+        if (res.ok) {
+          voteMessage.textContent = 'Thank you for voting!';
+          fetchVotingPair();
+        } else {
+          voteMessage.textContent = result.message || 'You may have already voted.';
+        }
+      } catch (err) {
+        voteMessage.textContent = 'Error submitting vote.';
+        console.error(err);
+      }
+    }
+
+    function generateVoterId() {
+      const id = 'voter_' + Math.random().toString(36).substring(2, 15);
+      localStorage.setItem('voterId', id);
+      return id;
+    }
+
+    window.onload = fetchVotingPair;
+  </script>
+</body>
+</html>
