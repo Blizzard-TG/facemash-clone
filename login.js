@@ -32,8 +32,9 @@ function sendResetLink(email) {
   alert(`Reset link sent to ${email}. (Simulated)`);
 }
 
-document.querySelector("a[href='#']").addEventListener("click", function (e) {
+document.getElementById("reset-link").addEventListener("click", (e) => {
   e.preventDefault();
-  const email = prompt("Enter your email to reset password:");
-  if (email) sendResetLink(email);
+  const email = prompt("Enter your email to reset your password:");
+  if (email) alert(`Reset link (simulated) sent to ${email}`);
+
 });
