@@ -1,167 +1,99 @@
-// backend.js (All logic handled with LocalStorage — no external backend)
+// Simple In-Browser Backend Logic (Simulated Backend)
 
-// ---------- LOCAL STORAGE UTILITIES ----------
-function getUsers() {
-  return JSON.parse(localStorage.getItem("users")) || [];
-}
+const backend = (() => {
+  const USERS_KEY = 'pm_users';
+  const UPLOADS_KEY = 'pm_uploads';
+  const VOTES_KEY = 'pm_votes';
+  const LEADERBOARD_KEY = 'pm_leaderboard';
+  const CURRENT_USER_KEY = 'pm_current_user';
 
-function saveUsers(users) {
-  localStorage.setItem("users", JSON.stringify(users));
-}
+  const getUsers = () => JSON.parse(localStorage.getItem(USERS_KEY)) || [];
+  const saveUsers = (users) => localStorage.setItem(USERS_KEY, JSON.stringify(users));
 
-function getUploads() {
-  return JSON.parse(localStorage.getItem("uploads")) || [];
-}
+  const getUploads = () => JSON.parse(localStorage.getItem(UPLOADS_KEY)) || [];
+  const saveUploads = (uploads) => localStorage.setItem(UPLOADS_KEY, JSON.stringify(uploads));
 
-function saveUploads(uploads) {
-  localStorage.setItem("uploads", JSON.stringify(uploads));
-}
+  const getVotes = () => JSON.parse(localStorage.getItem(VOTES_KEY)) || [];
+  const saveVotes = (votes) => localStorage.setItem(VOTES_KEY, JSON.stringify(votes));
 
-function getVotes() {
-  return JSON.parse(localStorage.getItem("votes")) || [];
-}
+  const getLeaderboard = () => JSON.parse(localStorage.getItem(LEADERBOARD_KEY)) || [];
+  const saveLeaderboard = (data) => localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(data));
 
-function saveVotes(votes) {
-  localStorage.setItem("votes", JSON.stringify(votes));
-}
+  const setCurrentUser = (user) => localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
+  const getCurrentUser = () => JSON.parse(localStorage.getItem(CURRENT_USER_KEY));
+  const logout = () => localStorage.removeItem(CURRENT_USER_KEY);
 
-function getCurrentUser() {
-  return JSON.parse(localStorage.getItem("currentUser"));
-}
+  return {
+    registerUser(user) {
+      const users = getUsers();
+      if (users.find(u => u.email === user.email)) {
+        throw new Error('Email already exists');
+      }
+      users.push(user);
+      saveUsers(users);
+    },
 
-function setCurrentUser(user) {
-  localStorage.setItem("currentUser", JSON.stringify(user));
-}
+    login(email, password) {
+      const users = getUsers();
+      const user = users.find(u => u.email === email && u.password === password);
+      if (!user) throw new Error('Invalid credentials');
+      setCurrentUser(user);
+      return user;
+    },
 
-function logoutUser() {
-  localStorage.removeItem("currentUser");
-}
+    getCurrentUser,
+    logout,
 
-// ---------- AUTHENTICATION ----------
-function signupUser(userData) {
-  const users = getUsers();
-  if (users.some((u) => u.email === userData.email)) {
-    throw new Error("Email already registered.");
-  }
-  users.push(userData);
-  saveUsers(users);
-  return "Signup successful.";
-}
+    uploadImages(pair) {
+      const user = getCurrentUser();
+      if (!user) throw new Error('Login required');
 
-function loginUser({ email, password }) {
-  const users = getUsers();
-  const user = users.find((u) => u.email === email && u.password === password);
-  if (!user) throw new Error("Invalid credentials");
-  setCurrentUser(user);
-  return user;
-}
+      const uploads = getUploads();
+      const now = Date.now();
+      const dayLimit = 5;
+      const last24 = uploads.filter(u => u.user === user.email && (now - u.time < 86400000));
+      if (last24.length >= dayLimit) throw new Error('Upload limit reached');
 
-// ---------- IMAGE UPLOAD ----------
-function uploadImages(image1Base64, image2Base64) {
-  const uploads = getUploads();
-  const user = getCurrentUser();
-  const timestamp = Date.now();
+      uploads.push({ ...pair, user: user.email, time: now, approved: false });
+      saveUploads(uploads);
+    },
 
-  if (!user) throw new Error("Login required to upload images.");
+    getPendingApprovals() {
+      return getUploads().filter(u => !u.approved);
+    },
 
-  // Limit 5 uploads per 24 hrs
-  const lastUploads = uploads.filter(
-    (u) => u.uploader === user.email && timestamp - u.timestamp < 86400000
-  );
-  if (lastUploads.length >= 5) throw new Error("Upload limit reached.");
+    approveUpload(index) {
+      const uploads = getUploads();
+      if (uploads[index]) uploads[index].approved = true;
+      saveUploads(uploads);
+    },
 
-  uploads.push({
-    id: Date.now(),
-    uploader: user.email,
-    approved: user.role === "admin",
-    image1: image1Base64,
-    image2: image2Base64,
-    votes1: 0,
-    votes2: 0,
-    timestamp,
-  });
-  saveUploads(uploads);
-  return "Uploaded successfully";
-}
+    getApprovedPairs() {
+      return getUploads().filter(u => u.approved);
+    },
 
-// ---------- VOTING ----------
-function getVotePair() {
-  const uploads = getUploads().filter((u) => u.approved);
-  if (uploads.length === 0) throw new Error("No approved images.");
-  return uploads[Math.floor(Math.random() * uploads.length)];
-}
+    vote(imageUrl) {
+      const user = getCurrentUser();
+      const votes = getVotes();
+      const today = new Date().toDateString();
 
-function submitVote(uploadId, choice) {
-  const user = getCurrentUser();
-  let voterId;
+      if (user && votes.find(v => v.user === user.email && v.image === imageUrl && v.date === today)) {
+        throw new Error('You already voted on this image today');
+      }
 
-  if (user) {
-    voterId = user.email;
-  } else {
-    voterId = localStorage.getItem("voterId");
-    if (!voterId) voterId = generateGuestId();
-  }
+      votes.push({ image: imageUrl, user: user?.email || 'guest', date: today });
+      saveVotes(votes);
 
-  const votes = getVotes();
-  const existing = votes.find((v) => v.voter === voterId && v.uploadId === uploadId);
-  if (existing) throw new Error("Already voted.");
+      const leaderboard = getLeaderboard();
+      const entry = leaderboard.find(i => i.image === imageUrl);
+      if (entry) {
+        entry.votes += 1;
+      } else {
+        leaderboard.push({ image: imageUrl, votes: 1 });
+      }
+      saveLeaderboard(leaderboard);
+    },
 
-  const uploads = getUploads();
-  const upload = uploads.find((u) => u.id === uploadId);
-  if (!upload) throw new Error("Upload not found.");
-
-  if (choice === 1) upload.votes1++;
-  else if (choice === 2) upload.votes2++;
-
-  votes.push({ voter: voterId, uploadId });
-  saveUploads(uploads);
-  saveVotes(votes);
-
-  return "Vote submitted.";
-}
-
-function generateGuestId() {
-  const id = 'guest-' + Math.random().toString(36).substr(2, 9);
-  localStorage.setItem("voterId", id);
-  return id;
-}
-
-// ---------- LEADERBOARD ----------
-function getLeaderboard() {
-  const uploads = getUploads().filter((u) => u.approved);
-  return uploads
-    .map((u) => ({
-      id: u.id,
-      uploader: u.uploader,
-      votes1: u.votes1,
-      votes2: u.votes2,
-      total: u.votes1 + u.votes2,
-    }))
-    .sort((a, b) => b.total - a.total);
-}
-
-// ---------- ADMIN FUNCTIONS ----------
-function approveImage(uploadId) {
-  const uploads = getUploads();
-  const upload = uploads.find((u) => u.id === uploadId);
-  if (upload) upload.approved = true;
-  saveUploads(uploads);
-  return "Approved.";
-}
-
-function getAllUsers() {
-  return getUsers();
-}
-
-function isAdmin() {
-  const user = getCurrentUser();
-  return user && user.role === "admin";
-}
-
-function resetUserData() {
-  localStorage.removeItem("users");
-  localStorage.removeItem("uploads");
-  localStorage.removeItem("votes");
-  localStorage.removeItem("currentUser");
-  localStorage.removeItem("voterId");
-}
+    getLeaderboard
+  };
+})();
