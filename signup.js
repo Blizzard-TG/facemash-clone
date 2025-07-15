@@ -1,3 +1,5 @@
+// signup.js
+
 document.getElementById("signupForm").addEventListener("submit", function (e) {
   e.preventDefault();
 
@@ -5,22 +7,39 @@ document.getElementById("signupForm").addEventListener("submit", function (e) {
   const email = document.getElementById("signupEmail").value.trim().toLowerCase();
   const password = document.getElementById("signupPassword").value;
   const confirmPassword = document.getElementById("confirmPassword").value;
-  const age = parseInt(document.getElementById("age").value);
+  const age = document.getElementById("age").value;
   const gender = document.getElementById("gender").value;
-  const nationality = document.getElementById("nationality").value.trim();
+  const nationality = document.getElementById("nationality").value;
 
+  const messageBox = document.getElementById("message-box");
+
+  // Validation
   if (!name || !email || !password || !confirmPassword || !age || !gender || !nationality) {
-    return alert("All fields are required.");
+    messageBox.textContent = "Please fill out all fields.";
+    messageBox.style.backgroundColor = "#f8d7da";
+    messageBox.style.color = "#721c24";
+    messageBox.style.display = "block";
+    return;
   }
 
   if (password !== confirmPassword) {
-    return alert("Passwords do not match.");
+    messageBox.textContent = "Passwords do not match.";
+    messageBox.style.backgroundColor = "#f8d7da";
+    messageBox.style.color = "#721c24";
+    messageBox.style.display = "block";
+    return;
   }
 
+  // Check if user already exists
   const users = JSON.parse(localStorage.getItem("users")) || [];
 
-  if (users.find(u => u.email === email)) {
-    return alert("This email is already registered.");
+  const userExists = users.some(user => user.email === email);
+  if (userExists) {
+    messageBox.textContent = "An account with this email already exists.";
+    messageBox.style.backgroundColor = "#f8d7da";
+    messageBox.style.color = "#721c24";
+    messageBox.style.display = "block";
+    return;
   }
 
   const newUser = {
@@ -30,14 +49,21 @@ document.getElementById("signupForm").addEventListener("submit", function (e) {
     age,
     gender,
     nationality,
-    role: "user", // default role
+    role: "user",
     uploads: [],
     votes: [],
-    createdAt: Date.now()
+    createdAt: new Date().toISOString(),
   };
 
   users.push(newUser);
   localStorage.setItem("users", JSON.stringify(users));
-  alert("Account created successfully. Please login.");
-  window.location.href = "login.html";
+
+  messageBox.textContent = "Signup successful! Redirecting to login...";
+  messageBox.style.backgroundColor = "#d4edda";
+  messageBox.style.color = "#155724";
+  messageBox.style.display = "block";
+
+  setTimeout(() => {
+    window.location.href = "login.html";
+  }, 2000);
 });
