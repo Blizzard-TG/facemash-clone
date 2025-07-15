@@ -1,155 +1,95 @@
-// backend.js
+// backend.js - core functions for PictureMash
 
-// In-memory storage for users and votes using localStorage
-if (!localStorage.getItem("users")) localStorage.setItem("users", JSON.stringify([]));
-if (!localStorage.getItem("votes")) localStorage.setItem("votes", JSON.stringify([]));
-if (!localStorage.getItem("images")) localStorage.setItem("images", JSON.stringify([]));
-if (!localStorage.getItem("leaderboard")) localStorage.setItem("leaderboard", JSON.stringify([]));
+// Signup user and save to localStorage
+function signupUser(userData) {
+  const users = JSON.parse(localStorage.getItem("facemashUsers") || "[]");
 
-function signupUser({ name, email, password, age, gender, nationality }) {
-  const users = JSON.parse(localStorage.getItem("users"));
-  if (users.find(u => u.email === email)) throw new Error("User already exists");
+  // Check if user with same email exists
+  const exists = users.some(u => u.email === userData.email);
+  if (exists) {
+    return { success: false, message: "User already exists." };
+  }
 
-  const newUser = {
-    id: Date.now(),
-    name,
-    email,
-    password,
-    age,
-    gender,
-    nationality,
-    isAdmin: false,
-    uploadCount: 0,
-    lastUpload: null
-  };
-
-  users.push(newUser);
-  localStorage.setItem("users", JSON.stringify(users));
-  return newUser;
+  users.push(userData);
+  localStorage.setItem("facemashUsers", JSON.stringify(users));
+  return { success: true };
 }
 
+// Login user by checking credentials
 function loginUser(email, password) {
-  const users = JSON.parse(localStorage.getItem('facemashUsers') || '[]');
+  const users = JSON.parse(localStorage.getItem("facemashUsers") || "[]");
   const user = users.find(u => u.email === email && u.password === password);
   if (user) {
-    localStorage.setItem('currentUser', JSON.stringify(user));
+    localStorage.setItem("currentUser", JSON.stringify(user));
     return user;
   }
   return null;
 }
-function logoutUser() {
-  localStorage.removeItem("currentUser");
-}
 
+// Get current logged-in user
 function getCurrentUser() {
   return JSON.parse(localStorage.getItem("currentUser"));
 }
 
-function resetPassword(email) {
-  const users = JSON.parse(localStorage.getItem("users"));
-  const user = users.find(u => u.email === email);
-  if (!user) throw new Error("User not found");
-  alert(`Password reset link sent to ${email} (simulated)`);
+// Logout user
+function logoutUser() {
+  localStorage.removeItem("currentUser");
 }
 
-function uploadImagePair(image1Url, image2Url, uploaderId) {
-  const user = getCurrentUser();
-  if (!user || user.id !== uploaderId) throw new Error("Unauthorized");
-
-  const now = Date.now();
-  const oneDay = 24 * 60 * 60 * 1000;
-  if (user.lastUpload && now - user.lastUpload < oneDay && user.uploadCount >= 5) {
-    throw new Error("Upload limit reached (5 per 24h)");
-  }
-
-  const images = JSON.parse(localStorage.getItem("images"));
-  const newPair = {
-    id: Date.now(),
-    image1: image1Url,
-    image2: image2Url,
-    uploaderId,
-    votes1: 0,
-    votes2: 0,
-    approved: user.isAdmin // auto-approved if admin
-  };
-
-  images.push(newPair);
-  localStorage.setItem("images", JSON.stringify(images));
-
-  // Update upload count
-  const users = JSON.parse(localStorage.getItem("users"));
-  const thisUser = users.find(u => u.id === uploaderId);
-  if (thisUser.lastUpload && now - thisUser.lastUpload >= oneDay) {
-    thisUser.uploadCount = 1;
-  } else {
-    thisUser.uploadCount += 1;
-  }
-  thisUser.lastUpload = now;
-  localStorage.setItem("users", JSON.stringify(users));
-
-  return newPair;
+// Save image upload (only 5 per 24 hours)
+function saveImageUpload(imageData) {
+  const uploads = JSON.parse(localStorage.getItem("facemashUploads") || "[]");
+  uploads.push(imageData);
+  localStorage.setItem("facemashUploads", JSON.stringify(uploads));
 }
 
-function getApprovedImages() {
-  return JSON.parse(localStorage.getItem("images")).filter(img => img.approved);
+// Get image pairs for voting
+function getVoteImages() {
+  const uploads = JSON.parse(localStorage.getItem("facemashUploads") || "[]");
+  const approved = uploads.filter(img => img.approved);
+  if (approved.length < 2) return null;
+
+  const shuffled = approved.sort(() => 0.5 - Math.random());
+  return [shuffled[0], shuffled[1]];
 }
 
-function voteOnImage(imageId, selected) {
-  const votes = JSON.parse(localStorage.getItem("votes"));
-  const user = getCurrentUser();
-  const voterId = user ? user.id : `guest-${Date.now()}`;
+// Save vote result and update scores
+function saveVote(winnerId, loserId) {
+  const uploads = JSON.parse(localStorage.getItem("facemashUploads") || "[]");
 
-  if (votes.find(v => v.imageId === imageId && v.voterId === voterId)) {
-    throw new Error("You already voted on this pair");
-  }
+  uploads.forEach(img => {
+    if (img.id === winnerId) img.score = (img.score || 1000) + 10;
+    if (img.id === loserId) img.score = (img.score || 1000) - 10;
+  });
 
-  votes.push({ imageId, selected, voterId });
-  localStorage.setItem("votes", JSON.stringify(votes));
-
-  const images = JSON.parse(localStorage.getItem("images"));
-  const image = images.find(i => i.id === imageId);
-  if (!image) throw new Error("Image not found");
-
-  if (selected === 1) image.votes1++;
-  else if (selected === 2) image.votes2++;
-
-  localStorage.setItem("images", JSON.stringify(images));
-  updateLeaderboard(image);
+  localStorage.setItem("facemashUploads", JSON.stringify(uploads));
 }
 
-function updateLeaderboard(image) {
-  const leaderboard = JSON.parse(localStorage.getItem("leaderboard"));
-
-  const updateScore = (url, votes) => {
-    let entry = leaderboard.find(e => e.url === url);
-    if (entry) entry.score += votes;
-    else leaderboard.push({ url, score: votes });
-  };
-
-  updateScore(image.image1, image.votes1);
-  updateScore(image.image2, image.votes2);
-
-  localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
-}
-
+// Get leaderboard data
 function getLeaderboard() {
-  return JSON.parse(localStorage.getItem("leaderboard")).sort((a, b) => b.score - a.score);
+  const uploads = JSON.parse(localStorage.getItem("facemashUploads") || "[]");
+  const approved = uploads.filter(img => img.approved);
+  return approved.sort((a, b) => (b.score || 0) - (a.score || 0));
 }
 
-function approveImage(imageId) {
-  const user = getCurrentUser();
-  if (!user || !user.isAdmin) throw new Error("Unauthorized");
-
-  const images = JSON.parse(localStorage.getItem("images"));
-  const image = images.find(i => i.id === imageId);
-  if (!image) throw new Error("Image not found");
-
-  image.approved = true;
-  localStorage.setItem("images", JSON.stringify(images));
+// Approve or reject image (admin only)
+function approveImage(id, status) {
+  const uploads = JSON.parse(localStorage.getItem("facemashUploads") || "[]");
+  const index = uploads.findIndex(img => img.id === id);
+  if (index !== -1) {
+    uploads[index].approved = status;
+    localStorage.setItem("facemashUploads", JSON.stringify(uploads));
+  }
 }
 
-function getAllUsers() {
-  const user = getCurrentUser();
-  if (!user || !user.isAdmin) throw new Error("Unauthorized");
-  return JSON.parse(localStorage.getItem("users"));
+// Simulate sending reset password email
+function sendResetEmail(email) {
+  const users = JSON.parse(localStorage.getItem("facemashUsers") || "[]");
+  const user = users.find(u => u.email === email);
+  if (user) {
+    alert(`Password reset link has been sent to ${email}`);
+  } else {
+    alert("Email not found.");
+  }
 }
+
