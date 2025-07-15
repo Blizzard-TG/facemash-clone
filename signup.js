@@ -39,5 +39,5 @@ document.getElementById("signupForm").addEventListener("submit", function (e) {
   users.push(newUser);
   localStorage.setItem("users", JSON.stringify(users));
   alert("Account created successfully. Please login.");
-  window.location.href = "login.html";
+  window.location.href = "facemash-clone/login.html";
 });
