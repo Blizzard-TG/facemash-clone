@@ -33,11 +33,11 @@ const backend = (() => {
       saveUsers(users);
     },
 
-    login(email, password) {
-      const users = getUsers();
+    function loginUser({ email, password }) {
+      const users = JSON.parse(localStorage.getItem("users") || "[]");
       const user = users.find(u => u.email === email && u.password === password);
-      if (!user) throw new Error('Invalid credentials');
-      setCurrentUser(user);
+      if (!user) throw new Error("Invalid credentials");
+      localStorage.setItem("currentUser", JSON.stringify(user));
       return user;
     },
 
