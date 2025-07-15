@@ -1,14 +1,37 @@
-document.getElementById('loginForm').addEventListener('submit', function (e) {
-  e.preventDefault();
-  
-  const email = document.getElementById('loginEmail').value.trim();
-  const password = document.getElementById('loginPassword').value.trim();
+/** login.js - Handles user login logic */
 
-  const user = loginUser(email, password);
+const loginForm = document.getElementById("loginForm");
+
+loginForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+
+  const email = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value.trim();
+
+  const users = JSON.parse(localStorage.getItem("users") || "[]");
+  const user = users.find(
+    (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
+  );
+
+  const messageBox = document.getElementById("message-box") || createMessageBox();
+
   if (user) {
-    alert(`Welcome back, ${user.name || user.email}!`);
-    window.location.href = 'upload.html'; // or vote.html or any page you want
+    localStorage.setItem("loggedInUser", JSON.stringify(user));
+    messageBox.innerText = `Welcome back, ${user.name || "user"}!`;
+    messageBox.style.display = "block";
+
+    setTimeout(() => {
+      window.location.href = user.isAdmin ? "upload.html" : "vote.html";
+    }, 1000);
   } else {
-    alert('Invalid login credentials');
+    messageBox.innerText = "Invalid email or password.";
+    messageBox.style.display = "block";
   }
 });
+
+function createMessageBox() {
+  const box = document.createElement("div");
+  box.id = "message-box";
+  document.body.insertBefore(box, loginForm);
+  return box;
+}
