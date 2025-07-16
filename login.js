@@ -1,5 +1,22 @@
 /** login.js - Handles user login logic */
 
+document.addEventListener("DOMContentLoaded", () => {
+  const loginForm = document.getElementById("loginForm");
+  loginForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const email = document.getElementById("loginEmail").value;
+    const password = document.getElementById("loginPassword").value;
+    const user = loginUser(email, password);
+    if (user) {
+      localStorage.setItem("facemashLoggedInUser", JSON.stringify(user));
+      alert("Login successful!");
+      window.location.href = "vote.html";
+    } else {
+      alert("Invalid credentials");
+    }
+  });
+});
+
 const loginForm = document.getElementById("loginForm");
 
 loginForm.addEventListener("submit", (e) => {
