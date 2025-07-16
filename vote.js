@@ -1,44 +1,50 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const voteBox = document.querySelector(".vote-box");
+// vote.js
 
-  const fetchVoteImages = async () => {
-    try {
-      const res = await fetch("/api/vote-images");
-      const data = await res.json();
-      if (data.images && data.images.length === 2) {
-        renderImages(data.images);
-      } else {
-        voteBox.innerHTML = "<p>Not enough images to vote on.</p>";
-      }
-    } catch (err) {
-      console.error("Failed to fetch vote images", err);
-    }
+function getRandomPair(images) {
+  if (images.length < 2) return [];
+
+  let index1 = Math.floor(Math.random() * images.length);
+  let index2;
+  do {
+    index2 = Math.floor(Math.random() * images.length);
+  } while (index2 === index1);
+
+  return [images[index1], images[index2]];
+}
+
+function displayImages(img1, img2, allImages) {
+  const container = document.getElementById("vote-container");
+  container.innerHTML = "";
+
+  const createImageCard = (imgData, index) => {
+    const img = document.createElement("img");
+    img.src = imgData.url;
+    img.alt = "Face";
+    img.className = "vote-img";
+    img.onclick = () => {
+      const realIndex = allImages.findIndex(
+        (i) => i.url === imgData.url && i.name === imgData.name
+      );
+      backend.voteImage(realIndex);
+      fetchVoteImages();
+    };
+    return img;
   };
 
-  const renderImages = ([img1, img2]) => {
-    voteBox.innerHTML = `
-      <img src="${img1.url}" class="vote-img" data-id="${img1.id}">
-      <img src="${img2.url}" class="vote-img" data-id="${img2.id}">
-    `;
+  container.appendChild(createImageCard(img1, 0));
+  container.appendChild(createImageCard(img2, 1));
+}
 
-    document.querySelectorAll(".vote-img").forEach((img) => {
-      img.addEventListener("click", async () => {
-        const winner = img.dataset.id;
-        const loser = winner === img1.id ? img2.id : img1.id;
+function fetchVoteImages() {
+  const approvedImages = backend.getApprovedImages();
+  if (approvedImages.length < 2) {
+    document.getElementById("vote-container").innerHTML =
+      "<p>Not enough images to vote. Please upload more!</p>";
+    return;
+  }
 
-        try {
-          await fetch("/api/vote", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ winner, loser }),
-          });
-          fetchVoteImages();
-        } catch (err) {
-          console.error("Vote failed", err);
-        }
-      });
-    });
-  };
+  const [img1, img2] = getRandomPair(approvedImages);
+  displayImages(img1, img2, approvedImages);
+}
 
-  fetchVoteImages();
-});
+document.addEventListener("DOMContentLoaded", fetchVoteImages);
