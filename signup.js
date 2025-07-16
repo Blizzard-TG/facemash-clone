@@ -1,69 +1,31 @@
-// signup.js
+document.addEventListener('DOMContentLoaded', () => {
+  const signupForm = document.getElementById("signupForm");
 
-document.getElementById("signupForm").addEventListener("submit", function (e) {
-  e.preventDefault();
+  if (!signupForm) return;
 
-  const name = document.getElementById("name").value.trim();
-  const email = document.getElementById("signupEmail").value.trim().toLowerCase();
-  const password = document.getElementById("signupPassword").value;
-  const confirmPassword = document.getElementById("confirmPassword").value;
-  const age = document.getElementById("age").value;
-  const gender = document.getElementById("gender").value;
-  const nationality = document.getElementById("nationality").value;
+  signupForm.addEventListener("submit", (e) => {
+    e.preventDefault();
 
-  const messageBox = document.getElementById("message-box");
+    const user = {
+      name: document.getElementById("name").value.trim(),
+      email: document.getElementById("signupEmail").value.trim(),
+      password: document.getElementById("signupPassword").value,
+      age: document.getElementById("age").value,
+      gender: document.getElementById("gender").value,
+      nationality: document.getElementById("nationality").value,
+    };
 
-  // Validation
-  if (!name || !email || !password || !confirmPassword || !age || !gender || !nationality) {
-    messageBox.textContent = "Please fill out all fields.";
-    messageBox.style.backgroundColor = "#f8d7da";
-    messageBox.style.color = "#721c24";
-    messageBox.style.display = "block";
-    return;
-  }
+    const users = JSON.parse(localStorage.getItem("users") || "[]");
+    const exists = users.some((u) => u.email === user.email);
 
-  if (password !== confirmPassword) {
-    messageBox.textContent = "Passwords do not match.";
-    messageBox.style.backgroundColor = "#f8d7da";
-    messageBox.style.color = "#721c24";
-    messageBox.style.display = "block";
-    return;
-  }
+    if (exists) {
+      alert("User already exists.");
+      return;
+    }
 
-  // Check if user already exists
-  const users = JSON.parse(localStorage.getItem("users")) || [];
-
-  const userExists = users.some(user => user.email === email);
-  if (userExists) {
-    messageBox.textContent = "An account with this email already exists.";
-    messageBox.style.backgroundColor = "#f8d7da";
-    messageBox.style.color = "#721c24";
-    messageBox.style.display = "block";
-    return;
-  }
-
-  const newUser = {
-    name,
-    email,
-    password,
-    age,
-    gender,
-    nationality,
-    role: "user",
-    uploads: [],
-    votes: [],
-    createdAt: new Date().toISOString(),
-  };
-
-  users.push(newUser);
-  localStorage.setItem("users", JSON.stringify(users));
-
-  messageBox.textContent = "Signup successful! Redirecting to login...";
-  messageBox.style.backgroundColor = "#d4edda";
-  messageBox.style.color = "#155724";
-  messageBox.style.display = "block";
-
-  setTimeout(() => {
+    users.push(user);
+    localStorage.setItem("users", JSON.stringify(users));
+    alert("Signup successful!");
     window.location.href = "login.html";
-  }, 2000);
+  });
 });
