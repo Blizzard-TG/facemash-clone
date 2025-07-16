@@ -1,1 +1,25 @@
-
+<!-- compliments.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Compliments - PictureMash</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="compliments.html" class="active">Compliments</a>
+  </nav>
+  <main>
+    <h2>Send Compliments</h2>
+    <form id="complimentForm">
+      <input type="text" id="complimentText" placeholder="Write a compliment..." required />
+      <button type="submit">Submit</button>
+    </form>
+    <ul id="complimentList"></ul>
+  </main>
+  <script src="compliments.js"></script>
+</body>
+</html>
