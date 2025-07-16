@@ -10,25 +10,25 @@
   <header>
     <h1>Upload Your Image</h1>
     <nav>
-    <a href="index.html">Home</a>
-    <a href="signup.html">Sign Up</a>
-    <a href="login.html">Login</a>
-    <a href="vote.html">Vote</a>
-    <a href="leaderboard.html">Leaderboard</a>
-    <a href="upload.html">Upload</a>
-    <a href="privacy.html" class="active">Privacy Policy</a>
-    <a href="terms.html">Terms</a>
-    <a href="about.html">About Us</a>
-  </nav>
+      <a href="index.html">Home</a>
+      <a href="signup.html">Sign Up</a>
+      <a href="login.html">Login</a>
+      <a href="vote.html">Vote</a>
+      <a href="leaderboard.html">Leaderboard</a>
+      <a href="upload.html">Upload</a>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms</a>
+      <a href="about.html">About Us</a>
+    </nav>
   </header>
 
   <main>
-    <form id="upload-form">
+    <form id="upload-form" enctype="multipart/form-data">
       <label for="name">Your Name</label>
-      <input type="text" id="name" required />
+      <input type="text" id="name" name="name" required />
 
-      <label for="image-url">Image URL</label>
-      <input type="url" id="image-url" required />
+      <label for="image-file">Upload Image File</label>
+      <input type="file" id="image-file" name="image" accept="image/*" required />
 
       <button type="submit">Upload</button>
     </form>
