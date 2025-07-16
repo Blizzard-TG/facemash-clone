@@ -2,79 +2,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Upload Images - PictureMash</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upload - PictureMash</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <nav class="navbar">
-    <div class="nav-left">
-      <h1>Facemash Clone</h1>
-    </div>
-    <div class="nav-right">
-      <a href="index.html">Home</a>
-      <a href="signup.html">Sign Up</a>
-      <a href="login.html">Login</a>
-      <a href="vote.html">Vote</a>
-      <a href="upload.html">Upload</a>
-      <a href="leaderboard.html">Leaderboard</a>
-      <a href="about-us.html">About</a>
-      <a href="privacy-policy.html>Privacy Policy</a>
-      <a href="terms-and-services.html>Terms and Services</a>
-    </div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="upload.html" class="active">Upload</a>
   </nav>
-
-  <section class="form-section">
-    <h2>Upload a Pair of Images</h2>
-    <form id="uploadForm" enctype="multipart/form-data">
-      <input type="file" name="image1" id="image1" accept="image/*" required />
-      <input type="file" name="image2" id="image2" accept="image/*" required />
-      <button type="submit">Submit for Verification</button>
-      <p id="uploadMessage"></p>
+  <main>
+    <h2>Upload Your Image</h2>
+    <form id="uploadForm">
+      <input type="text" id="title" placeholder="Title" required />
+      <input type="url" id="imageUrl" placeholder="Image URL" required />
+      <button type="submit">Submit</button>
     </form>
-  </section>
-
-  <script>
-    const uploadForm = document.getElementById('uploadForm');
-    const uploadMessage = document.getElementById('uploadMessage');
-
-    uploadForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const formData = new FormData();
-      formData.append('image1', document.getElementById('image1').files[0]);
-      formData.append('image2', document.getElementById('image2').files[0]);
-
-      const token = localStorage.getItem('authToken');
-
-      if (!token) {
-        uploadMessage.textContent = "You must be logged in to upload.";
-        return;
-      }
-
-      try {
-        const res = await fetch('http://localhost:3000/user/upload', {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`
-          },
-          body: formData
-        });
-
-        const result = await res.json();
-
-        if (res.ok) {
-          uploadMessage.textContent = "Upload submitted for admin verification.";
-          uploadForm.reset();
-        } else {
-          uploadMessage.textContent = result.message || "Upload failed.";
-        }
-      } catch (err) {
-        uploadMessage.textContent = "Error submitting upload.";
-        console.error(err);
-      }
-    });
-  </script>
+  </main>
+  <script src="upload.js"></script>
 </body>
 </html>
