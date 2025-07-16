@@ -1,32 +1,14 @@
+//! leaderboard.js
+
 document.addEventListener("DOMContentLoaded", () => {
-  const leaderboardTable = document.getElementById("leaderboard-table");
+  const votes = JSON.parse(localStorage.getItem("votes") || "{}");
+  const entries = Object.entries(votes).sort((a, b) => b[1] - a[1]);
+  const tbody = document.querySelector("#leaderboard-table tbody");
+  tbody.innerHTML = "";
 
-  const fetchLeaderboard = async () => {
-    try {
-      const res = await fetch("/api/leaderboard");
-      const data = await res.json();
-
-      leaderboardTable.innerHTML = `
-        <tr>
-          <th>Rank</th>
-          <th>Image</th>
-          <th>Score</th>
-        </tr>
-      `;
-
-      data.leaderboard.forEach((item, index) => {
-        leaderboardTable.innerHTML += `
-          <tr>
-            <td>${index + 1}</td>
-            <td><img src="${item.url}" alt="leader-img" width="100"></td>
-            <td>${item.score}</td>
-          </tr>
-        `;
-      });
-    } catch (err) {
-      console.error("Failed to fetch leaderboard", err);
-    }
-  };
-
-  fetchLeaderboard();
+  entries.forEach(([name, score], index) => {
+    const row = document.createElement("tr");
+    row.innerHTML = `<td>${index + 1}</td><td>${name}</td><td>${score}</td>`;
+    tbody.appendChild(row);
+  });
 });
