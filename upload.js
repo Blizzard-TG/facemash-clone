@@ -1,39 +1,27 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const uploadForm = document.getElementById("upload-form");
+  const form = document.getElementById("upload-form");
   const messageBox = document.getElementById("message-box");
 
-  uploadForm?.addEventListener("submit", async (e) => {
+  form.addEventListener("submit", (e) => {
     e.preventDefault();
+    const name = document.getElementById("name").value.trim();
+    const url = document.getElementById("image-url").value.trim();
 
-    const formData = new FormData(uploadForm);
-    const image = formData.get("image");
-
-    if (!image || image.size === 0) {
-      alert("Please select a valid image.");
+    if (!name || !url) {
+      showMessage("Please fill in all fields.", false);
       return;
     }
 
-    const username = localStorage.getItem("username");
-    if (!username) {
-      alert("You must be logged in to upload.");
-      return;
-    }
-
-    formData.append("username", username);
-
-    try {
-      const res = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      const result = await res.json();
-      messageBox.style.display = "block";
-      messageBox.innerText = result.message || "Image uploaded!";
-      uploadForm.reset();
-    } catch (err) {
-      console.error("Upload failed", err);
-      alert("Error uploading image.");
-    }
+    const imageData = { name, url, votes: 0 };
+    backend.saveImage(imageData);
+    showMessage("Image uploaded! Awaiting admin approval.", true);
+    form.reset();
   });
+
+  function showMessage(msg, success = true) {
+    messageBox.textContent = msg;
+    messageBox.style.display = "block";
+    messageBox.style.backgroundColor = success ? "#d4edda" : "#f8d7da";
+    messageBox.style.color = success ? "#155724" : "#721c24";
+  }
 });
