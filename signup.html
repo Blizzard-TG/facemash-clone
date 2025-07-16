@@ -2,36 +2,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sign Up - PictureMash</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <nav class="navbar">
-    <div class="nav-left">
-      <h1>Facemash Clone</h1>
-    </div>
-    <div class="nav-right">
-      <a href="index.html">Home</a>
-      <a href="signup.html">Sign Up</a>
-      <a href="login.html">Login</a>
-      <a href="vote.html">Vote</a>
-      <a href="upload.html">Upload</a>
-      <a href="leaderboard.html">Leaderboard</a>
-      <a href="about-us.html">About</a>
-      <a href="privacy-policy.html>Privacy Policy</a>
-      <a href="terms-and-services.html>Terms and Services</a>
-    </div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="signup.html" class="active">Sign Up</a>
+    <a href="login.html">Login</a>
+    <a href="vote.html">Vote</a>
+    <a href="leaderboard.html">Leaderboard</a>
   </nav>
-
   <section class="form-section">
     <h2>Create Your Account</h2>
     <form id="signupForm">
       <input type="text" id="name" placeholder="Full Name" required />
       <input type="email" id="signupEmail" placeholder="Email" required />
       <input type="password" id="signupPassword" placeholder="Password" required />
-      <input type="password" id="confirmPassword" placeholder="Confirm Password" required />
       <input type="number" id="age" placeholder="Age" required />
       <select id="gender" required>
         <option value="" disabled selected>Select Gender</option>
@@ -41,10 +30,8 @@
       </select>
       <input type="text" id="nationality" placeholder="Nationality" required />
       <button type="submit">Sign Up</button>
-      <p id="signupError" class="error-message"></p>
     </form>
   </section>
-
   <script src="signup.js"></script>
 </body>
 </html>
