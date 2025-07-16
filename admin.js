@@ -1,44 +1,28 @@
-document.addEventListener('DOMContentLoaded', () => {
-  const pendingContainer = document.getElementById('pending-approvals');
-  const leaderboardOverrideForm = document.getElementById('leaderboardOverrideForm');
+//! admin.js
 
-  // Show pending image approvals
-  function renderPendingApprovals() {
-    const pending = getPendingImages();
-    pendingContainer.innerHTML = '';
+document.addEventListener("DOMContentLoaded", () => {
+  const images = JSON.parse(localStorage.getItem("images") || "[]");
+  const pending = images.filter(img => !img.approved);
+  const container = document.getElementById("admin-approval");
 
-    pending.forEach((img, index) => {
-      const card = document.createElement('div');
-      card.classList.add('card');
-      card.innerHTML = `
-        <img src="${img.data}" alt="Pending Image" style="width: 100%; max-height: 300px;" />
-        <button onclick="approveImage(${index})">Approve</button>
-        <button onclick="rejectImage(${index})">Reject</button>
-      `;
-      pendingContainer.appendChild(card);
-    });
+  if (pending.length === 0) {
+    container.innerHTML = "<p>No pending images for approval.</p>";
+    return;
   }
 
-  window.approveImage = function(index) {
-    approvePendingImage(index);
-    renderPendingApprovals();
-    alert('Image approved!');
-  };
-
-  window.rejectImage = function(index) {
-    rejectPendingImage(index);
-    renderPendingApprovals();
-    alert('Image rejected!');
-  };
-
-  leaderboardOverrideForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const email = document.getElementById('overrideEmail').value.trim();
-    const newScore = parseInt(document.getElementById('overrideScore').value, 10);
-    overrideUserScore(email, newScore);
-    alert('Leaderboard score updated!');
-    leaderboardOverrideForm.reset();
+  pending.forEach((img, index) => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <img src="${img.data}" alt="${img.name}" style="max-width: 100%;">
+      <p><strong>${img.name}</strong></p>
+      <button data-index="${index}">Approve</button>
+    `;
+    card.querySelector("button").addEventListener("click", () => {
+      img.approved = true;
+      localStorage.setItem("images", JSON.stringify(images));
+      location.reload();
+    });
+    container.appendChild(card);
   });
-
-  renderPendingApprovals();
 });
