@@ -1,170 +1,108 @@
-// Simple localStorage-based backend simulation
+// backend.js
 
-// Utility Functions
-function getUsers() {
-  return JSON.parse(localStorage.getItem("users") || "[]");
-}
+// Load admin credentials from localStorage or default to hardcoded
+const ADMIN_EMAIL = localStorage.getItem("ADMIN_EMAIL") || "admin@example.com";
+const ADMIN_PASSWORD = localStorage.getItem("ADMIN_PASSWORD") || "admin123";
 
-function setUsers(users) {
+// User authentication system using localStorage
+function signupUser(userData) {
+  let users = JSON.parse(localStorage.getItem("users")) || [];
+  const exists = users.some((u) => u.email === userData.email);
+  if (exists) return { success: false, message: "User already exists." };
+  users.push(userData);
   localStorage.setItem("users", JSON.stringify(users));
+  return { success: true, message: "Signup successful." };
 }
 
-function getCurrentUser() {
-  return JSON.parse(localStorage.getItem("currentUser"));
-}
-
-function setCurrentUser(user) {
-  localStorage.setItem("currentUser", JSON.stringify(user));
-}
-
-function getImages() {
-  return JSON.parse(localStorage.getItem("images") || "[]");
-}
-
-function setImages(images) {
-  localStorage.setItem("images", JSON.stringify(images));
-}
-
-function getVotes() {
-  return JSON.parse(localStorage.getItem("votes") || "[]");
-}
-
-function setVotes(votes) {
-  localStorage.setItem("votes", JSON.stringify(votes));
-}
-
-// Sign Up
-function signupUser(data) {
-  const users = getUsers();
-  if (users.find(u => u.email === data.email)) {
-    alert("Email already exists.");
-    return false;
-  }
-  users.push({ ...data, role: "user" });
-  setUsers(users);
-  return true;
-}
-
-// Login
 function loginUser(email, password) {
-  const users = getUsers();
-  const user = users.find(u => u.email === email && u.password === password);
-  if (!user) {
-    alert("Invalid credentials.");
-    return false;
+  if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+    return { success: true, role: "admin", message: "Welcome Admin" };
   }
-  setCurrentUser(user);
+  const users = JSON.parse(localStorage.getItem("users")) || [];
+  const user = users.find((u) => u.email === email && u.password === password);
+  if (user) {
+    return { success: true, role: "user", message: "Login successful." };
+  }
+  return { success: false, message: "Invalid credentials." };
+}
+
+function saveImage(data) {
+  let images = JSON.parse(localStorage.getItem("images")) || [];
+  images.push({ ...data, approved: false });
+  localStorage.setItem("images", JSON.stringify(images));
   return true;
 }
 
-// Logout
-function logoutUser() {
-  localStorage.removeItem("currentUser");
+function getApprovedImages() {
+  const images = JSON.parse(localStorage.getItem("images")) || [];
+  return images.filter((img) => img.approved);
 }
 
-// Upload image
-function uploadImage(imageDataUrl) {
-  const images = getImages();
-  const user = getCurrentUser();
-  if (!user) return alert("Not logged in.");
-  const userUploads = images.filter(img => img.uploadedBy === user.email);
-  const now = Date.now();
-  const uploadsIn24h = userUploads.filter(img => now - img.timestamp < 24 * 60 * 60 * 1000);
-  if (uploadsIn24h.length >= 5) {
-    return alert("Upload limit reached (5 per 24 hours).");
+function getUnapprovedImages() {
+  const images = JSON.parse(localStorage.getItem("images")) || [];
+  return images.filter((img) => !img.approved);
+}
+
+function approveImage(index) {
+  let images = JSON.parse(localStorage.getItem("images")) || [];
+  if (images[index]) {
+    images[index].approved = true;
+    localStorage.setItem("images", JSON.stringify(images));
+    return true;
   }
-
-  const newImg = {
-    id: crypto.randomUUID(),
-    url: imageDataUrl,
-    uploadedBy: user.email,
-    approved: user.role === "admin",
-    score: 1000,
-    timestamp: now
-  };
-
-  images.push(newImg);
-  setImages(images);
-  alert("Image uploaded" + (newImg.approved ? "." : " and pending admin approval."));
+  return false;
 }
 
-// Voting
-function voteImage(winnerId, loserId) {
-  const images = getImages();
-  const winner = images.find(i => i.id === winnerId);
-  const loser = images.find(i => i.id === loserId);
-
-  if (!winner || !loser) return;
-
-  // Elo-like scoring
-  const k = 32;
-  const expectedScore = 1 / (1 + Math.pow(10, (loser.score - winner.score) / 400));
-  winner.score += Math.round(k * (1 - expectedScore));
-  loser.score -= Math.round(k * expectedScore);
-
-  setImages(images);
-
-  // Store votes
-  const votes = getVotes();
-  votes.push({ winnerId, loserId, timestamp: Date.now() });
-  setVotes(votes);
+function voteImage(index) {
+  let images = JSON.parse(localStorage.getItem("images")) || [];
+  if (images[index]) {
+    images[index].votes = (images[index].votes || 0) + 1;
+    localStorage.setItem("images", JSON.stringify(images));
+    return true;
+  }
+  return false;
 }
 
-// Leaderboard
 function getLeaderboard() {
-  return getImages()
-    .filter(img => img.approved)
-    .sort((a, b) => b.score - a.score);
+  const images = JSON.parse(localStorage.getItem("images")) || [];
+  return images.filter((img) => img.approved).sort((a, b) => (b.votes || 0) - (a.votes || 0));
 }
 
-// Admin: Approve image
-function approveImage(imageId) {
-  const user = getCurrentUser();
-  if (!user || user.role !== "admin") return alert("Admin access only.");
-  const images = getImages();
-  const img = images.find(i => i.id === imageId);
-  if (img) img.approved = true;
-  setImages(images);
+function resetVotes() {
+  let images = JSON.parse(localStorage.getItem("images")) || [];
+  images = images.map((img) => ({ ...img, votes: 0 }));
+  localStorage.setItem("images", JSON.stringify(images));
+  return true;
 }
 
-// Admin: Override score
-function updateScore(imageId, newScore) {
-  const user = getCurrentUser();
-  if (!user || user.role !== "admin") return alert("Admin access only.");
-  const images = getImages();
-  const img = images.find(i => i.id === imageId);
-  if (img) img.score = newScore;
-  setImages(images);
-}
-
-// Compliments
-function leaveCompliment(imageId, text) {
-  const user = getCurrentUser();
-  if (!user) return alert("Only logged-in users can leave compliments.");
-  const compliments = JSON.parse(localStorage.getItem("compliments") || "[]");
-  compliments.push({ imageId, text, by: user.email, time: Date.now() });
+function addCompliment(compliment) {
+  let compliments = JSON.parse(localStorage.getItem("compliments")) || [];
+  compliments.push(compliment);
   localStorage.setItem("compliments", JSON.stringify(compliments));
 }
 
-// Admin: Get pending approval images
-function getPendingImages() {
-  const images = getImages();
-  return images.filter(img => !img.approved);
+function getCompliments() {
+  return JSON.parse(localStorage.getItem("compliments")) || [];
 }
 
-// Get compliments for image
-function getCompliments(imageId) {
-  const compliments = JSON.parse(localStorage.getItem("compliments") || "[]");
-  return compliments.filter(c => c.imageId === imageId);
+function resetAdminCredentials(email, password) {
+  localStorage.setItem("ADMIN_EMAIL", email);
+  localStorage.setItem("ADMIN_PASSWORD", password);
+  return true;
 }
 
-// Password reset simulation
-function resetPassword(email) {
-  const users = getUsers();
-  const user = users.find(u => u.email === email);
-  if (user) {
-    alert("Password reset link has been sent to " + email);
-  } else {
-    alert("Email not found.");
-  }
-}
+// Expose methods globally
+window.backend = {
+  signupUser,
+  loginUser,
+  saveImage,
+  getApprovedImages,
+  getUnapprovedImages,
+  approveImage,
+  voteImage,
+  getLeaderboard,
+  resetVotes,
+  addCompliment,
+  getCompliments,
+  resetAdminCredentials,
+};
