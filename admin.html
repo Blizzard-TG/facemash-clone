@@ -23,6 +23,43 @@
     <h2>Admin Panel</h2>
     <div id="approval-section"></div>
   </main>
+  <!-- Hidden Admin Credential Panel -->
+<div id="admin-credential-panel" style="display:none; padding: 2rem; background:#fffbe6; margin-top: 2rem; border: 2px dashed #f4b400; border-radius: 10px;">
+  <h3>Update Admin Credentials</h3>
+  <form id="admin-update-form">
+    <label for="newAdminEmail">New Admin Email:</label>
+    <input type="email" id="newAdminEmail" required>
+
+    <label for="newAdminPassword">New Admin Password:</label>
+    <input type="password" id="newAdminPassword" required>
+
+    <button type="submit">Update Credentials</button>
+    <p id="admin-update-message" style="margin-top: 1rem;"></p>
+  </form>
+</div>
+
+<script>
+  // Show panel only if logged in as admin
+  const currentUserEmail = localStorage.getItem("currentUserEmail");
+  const adminEmail = localStorage.getItem("ADMIN_EMAIL") || "admin@example.com";
+  if (currentUserEmail === adminEmail) {
+    document.getElementById("admin-credential-panel").style.display = "block";
+  }
+
+  document.getElementById("admin-update-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    const email = document.getElementById("newAdminEmail").value.trim();
+    const password = document.getElementById("newAdminPassword").value.trim();
+    if (!email || !password) {
+      document.getElementById("admin-update-message").innerText = "Both fields are required.";
+      return;
+    }
+
+    backend.resetAdminCredentials(email, password);
+    localStorage.setItem("currentUserEmail", email); // auto-login new admin
+    document.getElementById("admin-update-message").innerText = "✅ Admin credentials updated!";
+  });
+</script>
   <script src="admin.js"></script>
 </body>
 </html>
