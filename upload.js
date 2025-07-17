@@ -1,53 +1,54 @@
-document.getElementById("upload-form").addEventListener("submit", async function (e) {
-  e.preventDefault();
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("upload-form");
+  const currentUser = JSON.parse(localStorage.getItem("currentUser"));
 
-  const name = document.getElementById("name").value.trim();
-  const fileInput = document.getElementById("image-file");
-  const messageBox = document.getElementById("message-box");
-
-  if (!fileInput.files.length) {
-    return showMessage("Please select an image file to upload.");
+  if (!currentUser) {
+    alert("Login required to upload.");
+    window.location.href = "login.html";
+    return;
   }
 
-  const file = fileInput.files[0];
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const name = form.name.value.trim();
+    const fileInput = form.image.files[0];
 
-  // Validate image type
-  if (!file.type.startsWith("image/")) {
-    return showMessage("Only image files are allowed.");
-  }
+    if (!fileInput || !name) {
+      alert("Both fields required.");
+      return;
+    }
 
-  // Read file as Base64
-  const reader = new FileReader();
-  reader.onload = function () {
-    const base64Image = reader.result;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const images = JSON.parse(localStorage.getItem("images") || "[]");
 
-    // Create image object
-    const imageEntry = {
-      id: Date.now(),
-      name,
-      image: base64Image,
-      score: 0,
-      uploadedAt: new Date().toISOString(),
-      approved: false // Admin needs to approve
+      const now = Date.now();
+      const uploads = JSON.parse(localStorage.getItem("uploadLogs") || "{}");
+      const userUploads = uploads[currentUser.email] || [];
+
+      const recentUploads = userUploads.filter(t => now - t < 24 * 60 * 60 * 1000);
+      if (recentUploads.length >= 5) {
+        alert("Upload limit reached (5 per 24 hours).");
+        return;
+      }
+
+      const newImage = {
+        name,
+        data: reader.result,
+        uploader: currentUser.email,
+        approved: false
+      };
+
+      images.push(newImage);
+      localStorage.setItem("images", JSON.stringify(images));
+
+      uploads[currentUser.email] = [...recentUploads, now];
+      localStorage.setItem("uploadLogs", JSON.stringify(uploads));
+
+      alert("Uploaded! Awaiting admin approval.");
+      form.reset();
     };
 
-    // Store in localStorage
-    const uploads = JSON.parse(localStorage.getItem("uploadedImages") || "[]");
-    uploads.push(imageEntry);
-    localStorage.setItem("uploadedImages", JSON.stringify(uploads));
-
-    showMessage("Image uploaded successfully! Waiting for admin approval.");
-
-    // Reset form
-    fileInput.value = "";
-    document.getElementById("name").value = "";
-  };
-
-  reader.readAsDataURL(file);
+    reader.readAsDataURL(fileInput);
+  });
 });
-
-function showMessage(msg) {
-  const messageBox = document.getElementById("message-box");
-  messageBox.textContent = msg;
-  messageBox.style.display = "block";
-}
