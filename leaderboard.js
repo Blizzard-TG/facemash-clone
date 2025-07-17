@@ -1,5 +1,3 @@
-//! leaderboard.js
-
 document.addEventListener("DOMContentLoaded", () => {
   const votes = JSON.parse(localStorage.getItem("votes") || "{}");
   const entries = Object.entries(votes).sort((a, b) => b[1] - a[1]);
