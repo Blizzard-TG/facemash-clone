@@ -1,31 +1,36 @@
-document.addEventListener('DOMContentLoaded', () => {
-  const signupForm = document.getElementById("signupForm");
+document.addEventListener("DOMContentLoaded", () => {
+  const signupForm = document.getElementById("signup-form");
 
   if (!signupForm) return;
 
   signupForm.addEventListener("submit", (e) => {
     e.preventDefault();
+    const name = signupForm.name.value.trim();
+    const email = signupForm.email.value.trim().toLowerCase();
+    const password = signupForm.password.value;
 
-    const user = {
-      name: document.getElementById("name").value.trim(),
-      email: document.getElementById("signupEmail").value.trim(),
-      password: document.getElementById("signupPassword").value,
-      age: document.getElementById("age").value,
-      gender: document.getElementById("gender").value,
-      nationality: document.getElementById("nationality").value,
-    };
-
-    const users = JSON.parse(localStorage.getItem("users") || "[]");
-    const exists = users.some((u) => u.email === user.email);
-
-    if (exists) {
-      alert("User already exists.");
+    if (!name || !email || !password) {
+      alert("All fields are required.");
       return;
     }
 
-    users.push(user);
+    const users = JSON.parse(localStorage.getItem("users") || "[]");
+
+    if (users.some(u => u.email === email)) {
+      alert("Email already exists.");
+      return;
+    }
+
+    const newUser = {
+      name,
+      email,
+      password,
+      role: email.includes("@admin") ? "admin" : "user"
+    };
+
+    users.push(newUser);
     localStorage.setItem("users", JSON.stringify(users));
-    alert("Signup successful!");
+    alert("Account created successfully. Please log in.");
     window.location.href = "login.html";
   });
 });
