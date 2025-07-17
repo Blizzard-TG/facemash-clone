@@ -1,65 +1,20 @@
-<!-- admin.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Panel - PictureMash</title>
+  <title>Admin Dashboard</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <nav>
-    <a href="index.html">Home</a>
-    <a href="signup.html">Sign Up</a>
-    <a href="login.html">Login</a>
-    <a href="vote.html">Vote</a>
-    <a href="leaderboard.html">Leaderboard</a>
-    <a href="upload.html">Upload</a>
-    <a href="privacy.html" class="active">Privacy Policy</a>
-    <a href="terms.html">Terms</a>
-    <a href="about.html">About Us</a>
-  </nav>
+  <header><h1>Admin Panel</h1></header>
   <main>
-    <h2>Admin Panel</h2>
-    <div id="approval-section"></div>
+    <section id="admin-approval" class="admin-section"></section>
+    <hr />
+    <section class="admin-section">
+      <button id="export-data">Export Data</button>
+      <input type="file" id="import-data" accept=".json" />
+    </section>
   </main>
-  <!-- Hidden Admin Credential Panel -->
-<div id="admin-credential-panel" style="display:none; padding: 2rem; background:#fffbe6; margin-top: 2rem; border: 2px dashed #f4b400; border-radius: 10px;">
-  <h3>Update Admin Credentials</h3>
-  <form id="admin-update-form">
-    <label for="newAdminEmail">New Admin Email:</label>
-    <input type="email" id="newAdminEmail" required>
-
-    <label for="newAdminPassword">New Admin Password:</label>
-    <input type="password" id="newAdminPassword" required>
-
-    <button type="submit">Update Credentials</button>
-    <p id="admin-update-message" style="margin-top: 1rem;"></p>
-  </form>
-</div>
-
-<script>
-  // Show panel only if logged in as admin
-  const currentUserEmail = localStorage.getItem("currentUserEmail");
-  const adminEmail = localStorage.getItem("ADMIN_EMAIL") || "admin@example.com";
-  if (currentUserEmail === adminEmail) {
-    document.getElementById("admin-credential-panel").style.display = "block";
-  }
-
-  document.getElementById("admin-update-form").addEventListener("submit", function (e) {
-    e.preventDefault();
-    const email = document.getElementById("newAdminEmail").value.trim();
-    const password = document.getElementById("newAdminPassword").value.trim();
-    if (!email || !password) {
-      document.getElementById("admin-update-message").innerText = "Both fields are required.";
-      return;
-    }
-
-    backend.resetAdminCredentials(email, password);
-    localStorage.setItem("currentUserEmail", email); // auto-login new admin
-    document.getElementById("admin-update-message").innerText = "✅ Admin credentials updated!";
-  });
-</script>
   <script src="admin.js"></script>
 </body>
 </html>
