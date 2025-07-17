@@ -1,108 +1,58 @@
 // backend.js
 
-// Load admin credentials from localStorage or default to hardcoded
-const ADMIN_EMAIL = localStorage.getItem("ADMIN_EMAIL") || "admin@example.com";
-const ADMIN_PASSWORD = localStorage.getItem("ADMIN_PASSWORD") || "admin123";
+// Utility Functions
+function getUsers() {
+  return JSON.parse(localStorage.getItem("users") || "[]");
+}
 
-// User authentication system using localStorage
-function signupUser(userData) {
-  let users = JSON.parse(localStorage.getItem("users")) || [];
-  const exists = users.some((u) => u.email === userData.email);
-  if (exists) return { success: false, message: "User already exists." };
-  users.push(userData);
+function saveUsers(users) {
   localStorage.setItem("users", JSON.stringify(users));
-  return { success: true, message: "Signup successful." };
 }
 
+function getCurrentUser() {
+  return JSON.parse(localStorage.getItem("currentUser"));
+}
+
+function setCurrentUser(user) {
+  localStorage.setItem("currentUser", JSON.stringify(user));
+}
+
+function isAdmin(user) {
+  return user && user.role === "admin";
+}
+
+// Signup Function
+function signupUser(email, password, isAdminFlag = false) {
+  const users = getUsers();
+  const exists = users.some(u => u.email === email);
+  if (exists) throw new Error("User already exists");
+
+  const newUser = { email, password, role: isAdminFlag ? "admin" : "user" };
+  users.push(newUser);
+  saveUsers(users);
+  return newUser;
+}
+
+// Login Function
 function loginUser(email, password) {
-  if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-    return { success: true, role: "admin", message: "Welcome Admin" };
-  }
-  const users = JSON.parse(localStorage.getItem("users")) || [];
-  const user = users.find((u) => u.email === email && u.password === password);
-  if (user) {
-    return { success: true, role: "user", message: "Login successful." };
-  }
-  return { success: false, message: "Invalid credentials." };
+  const users = getUsers();
+  const user = users.find(u => u.email === email && u.password === password);
+  if (!user) throw new Error("Invalid credentials");
+  setCurrentUser(user);
+  return user;
 }
 
-function saveImage(data) {
-  let images = JSON.parse(localStorage.getItem("images")) || [];
-  images.push({ ...data, approved: false });
-  localStorage.setItem("images", JSON.stringify(images));
+// Logout
+function logoutUser() {
+  localStorage.removeItem("currentUser");
+}
+
+// Password Reset (Simulation)
+function resetPassword(email, newPassword) {
+  const users = getUsers();
+  const user = users.find(u => u.email === email);
+  if (!user) throw new Error("User not found");
+  user.password = newPassword;
+  saveUsers(users);
   return true;
 }
-
-function getApprovedImages() {
-  const images = JSON.parse(localStorage.getItem("images")) || [];
-  return images.filter((img) => img.approved);
-}
-
-function getUnapprovedImages() {
-  const images = JSON.parse(localStorage.getItem("images")) || [];
-  return images.filter((img) => !img.approved);
-}
-
-function approveImage(index) {
-  let images = JSON.parse(localStorage.getItem("images")) || [];
-  if (images[index]) {
-    images[index].approved = true;
-    localStorage.setItem("images", JSON.stringify(images));
-    return true;
-  }
-  return false;
-}
-
-function voteImage(index) {
-  let images = JSON.parse(localStorage.getItem("images")) || [];
-  if (images[index]) {
-    images[index].votes = (images[index].votes || 0) + 1;
-    localStorage.setItem("images", JSON.stringify(images));
-    return true;
-  }
-  return false;
-}
-
-function getLeaderboard() {
-  const images = JSON.parse(localStorage.getItem("images")) || [];
-  return images.filter((img) => img.approved).sort((a, b) => (b.votes || 0) - (a.votes || 0));
-}
-
-function resetVotes() {
-  let images = JSON.parse(localStorage.getItem("images")) || [];
-  images = images.map((img) => ({ ...img, votes: 0 }));
-  localStorage.setItem("images", JSON.stringify(images));
-  return true;
-}
-
-function addCompliment(compliment) {
-  let compliments = JSON.parse(localStorage.getItem("compliments")) || [];
-  compliments.push(compliment);
-  localStorage.setItem("compliments", JSON.stringify(compliments));
-}
-
-function getCompliments() {
-  return JSON.parse(localStorage.getItem("compliments")) || [];
-}
-
-function resetAdminCredentials(email, password) {
-  localStorage.setItem("ADMIN_EMAIL", email);
-  localStorage.setItem("ADMIN_PASSWORD", password);
-  return true;
-}
-
-// Expose methods globally
-window.backend = {
-  signupUser,
-  loginUser,
-  saveImage,
-  getApprovedImages,
-  getUnapprovedImages,
-  approveImage,
-  voteImage,
-  getLeaderboard,
-  resetVotes,
-  addCompliment,
-  getCompliments,
-  resetAdminCredentials,
-};
