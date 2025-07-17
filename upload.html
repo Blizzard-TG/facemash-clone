@@ -1,45 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Upload Images - Facemash Clone</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="UTF-8">
+  <title>Upload</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <header>
-    <h1>Upload Your Image</h1>
-    <nav>
-      <a href="index.html">Home</a>
-      <a href="signup.html">Sign Up</a>
-      <a href="login.html">Login</a>
-      <a href="vote.html">Vote</a>
-      <a href="leaderboard.html">Leaderboard</a>
-      <a href="upload.html">Upload</a>
-      <a href="privacy.html">Privacy Policy</a>
-      <a href="terms.html">Terms</a>
-      <a href="about.html">About Us</a>
-    </nav>
-  </header>
-
+  <header><h1>Upload Image</h1></header>
   <main>
-    <form id="upload-form" enctype="multipart/form-data">
-      <label for="name">Your Name</label>
-      <input type="text" id="name" name="name" required />
-
-      <label for="image-file">Upload Image File</label>
-      <input type="file" id="image-file" name="image" accept="image/*" required />
-
+    <form id="upload-form">
+      <input type="text" id="name" placeholder="Image Name" required />
+      <input type="file" id="fileInput" accept="image/*" required />
       <button type="submit">Upload</button>
+      <div id="message-box"></div>
     </form>
-    <div id="message-box"></div>
   </main>
-
-  <footer>
-    <p>&copy; 2025 Facemash Clone</p>
-  </footer>
-
-  <script src="backend.js"></script>
   <script src="upload.js"></script>
 </body>
 </html>
