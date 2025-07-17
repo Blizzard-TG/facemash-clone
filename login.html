@@ -1,36 +1,23 @@
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Login - PictureMash</title>
-  <link rel="stylesheet" href="styles.css" />
-</head>
-<body>
-  <nav>
-    <a href="index.html">Home</a>
-    <a href="signup.html">Sign Up</a>
-    <a href="login.html">Login</a>
-    <a href="vote.html">Vote</a>
-    <a href="leaderboard.html">Leaderboard</a>
-    <a href="upload.html">Upload</a>
-    <a href="privacy.html" class="active">Privacy Policy</a>
-    <a href="terms.html">Terms</a>
-    <a href="about.html">About Us</a>
-  </nav>
+document.addEventListener("DOMContentLoaded", () => {
+  const loginForm = document.getElementById("login-form");
 
-  <main>
-    <section class="form-section">
-      <h2>Login</h2>
-      <form id="loginForm">
-        <input type="email" id="loginEmail" placeholder="Email" required />
-        <input type="password" id="loginPassword" placeholder="Password" required />
-        <button type="submit">Login</button>
-        <p><a href="#" onclick="alert('Password reset link would be sent.')">Forgot password?</a></p>
-      </form>
-    </section>
-  </main>
+  if (!loginForm) return;
 
-  <script src="backend.js" defer></script>
-  <script src="login.js" defer></script>
-</body>
-</html>
+  loginForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const email = loginForm.email.value.trim().toLowerCase();
+    const password = loginForm.password.value;
+
+    const users = JSON.parse(localStorage.getItem("users") || "[]");
+    const user = users.find(u => u.email === email && u.password === password);
+
+    if (!user) {
+      alert("Invalid credentials.");
+      return;
+    }
+
+    localStorage.setItem("currentUser", JSON.stringify(user));
+    alert(`Welcome ${user.name}!`);
+    window.location.href = user.role === "admin" ? "admin.html" : "index.html";
+  });
+});
