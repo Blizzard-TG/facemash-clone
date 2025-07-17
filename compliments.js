@@ -1,30 +1,21 @@
-document.addEventListener('DOMContentLoaded', () => {
-  const complimentForm = document.getElementById('complimentForm');
-  const complimentList = document.getElementById('complimentList');
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("compliment-form");
+  const complimentList = document.getElementById("compliment-list");
 
-  function renderCompliments() {
-    const compliments = getAllCompliments();
-    complimentList.innerHTML = '';
-    compliments.forEach(c => {
-      const div = document.createElement('div');
-      div.classList.add('card');
-      div.innerHTML = `<strong>${c.from}</strong>: ${c.message}`;
-      complimentList.appendChild(div);
-    });
-  }
+  const compliments = JSON.parse(localStorage.getItem("compliments") || "[]");
+  complimentList.innerHTML = compliments.map(c => `<li>${c}</li>`).join("");
 
-  complimentForm.addEventListener('submit', (e) => {
+  form.addEventListener("submit", (e) => {
     e.preventDefault();
-    const from = localStorage.getItem('loggedInUser');
-    const message = document.getElementById('complimentText').value;
-    if (!from) {
-      alert('You must be logged in to leave a compliment.');
-      return;
-    }
-    addCompliment(from, message);
-    complimentForm.reset();
-    renderCompliments();
-  });
+    const compliment = form.message.value.trim();
+    if (!compliment) return;
 
-  renderCompliments();
+    compliments.push(compliment);
+    localStorage.setItem("compliments", JSON.stringify(compliments));
+
+    const li = document.createElement("li");
+    li.textContent = compliment;
+    complimentList.appendChild(li);
+    form.reset();
+  });
 });
