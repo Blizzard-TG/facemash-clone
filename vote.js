@@ -1,6 +1,8 @@
-//! vote.js
+function isLoggedIn() {
+  return !!localStorage.getItem("currentUser");
+}
 
-async function fetchVoteImages() {
+function fetchVoteImages() {
   const allImages = JSON.parse(localStorage.getItem("images") || "[]");
   const approvedImages = allImages.filter(img => img.approved);
 
@@ -27,7 +29,10 @@ function castVote(winnerName) {
 
 document.addEventListener("DOMContentLoaded", () => {
   fetchVoteImages();
-  document.getElementById("img1").addEventListener("click", () => castVote(document.getElementById("img1").dataset.name));
-  document.getElementById("img2").addEventListener("click", () => castVote(document.getElementById("img2").dataset.name));
+  document.getElementById("img1").addEventListener("click", () =>
+    castVote(document.getElementById("img1").dataset.name)
+  );
+  document.getElementById("img2").addEventListener("click", () =>
+    castVote(document.getElementById("img2").dataset.name)
+  );
 });
-
